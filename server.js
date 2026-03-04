@@ -10,6 +10,7 @@ const INDEX_PATH = path.join(ROOT_DIR, "index.html");
 const DEPLOYMENTS_DIR = path.join(ROOT_DIR, ".deployments");
 const MAX_DEPLOYMENT_PAYLOAD_BYTES = Number(process.env.MAX_DEPLOYMENT_PAYLOAD_BYTES) || (15 * 1024 * 1024);
 const MAX_DEPLOYMENT_FILE_COUNT = Number(process.env.MAX_DEPLOYMENT_FILE_COUNT) || 350;
+const PUBLIC_BASE_URL = normalizePublicBaseUrl(process.env.PUBLIC_BASE_URL || "");
 const DEFAULT_PROXY_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
 
 const MIME_TYPES = {
@@ -355,21 +356,34 @@ function readJsonBody(request, maxBytes) {
   });
 }
 
-function getRequestOrigin(request) {
-  const forwardedProtoHeader = String(request.headers["x-forwarded-proto"] || "");
-  const forwardedHostHeader = String(request.headers["x-forwarded-host"] || "");
+function normalizePublicBaseUrl(rawValue) {
+  const value = String(rawValue || "").trim();
+  if (!value) {
+    return "";
+  }
 
-  const protocol = forwardedProtoHeader
-    .split(",")
-    .map((item) => item.trim())
-    .find(Boolean) || "http";
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return "";
+    }
 
-  const host = forwardedHostHeader
-    .split(",")
-    .map((item) => item.trim())
-    .find(Boolean) || request.headers.host || `localhost:${PORT}`;
+    parsed.pathname = parsed.pathname.replace(/\/+$/, "");
+    parsed.search = "";
+    parsed.hash = "";
+    return parsed.toString().replace(/\/+$/, "");
+  } catch (_error) {
+    return "";
+  }
+}
 
-  return `${protocol}://${host}`;
+function toPublicUrl(pathname) {
+  const safePath = String(pathname || "/");
+  if (!PUBLIC_BASE_URL) {
+    return safePath;
+  }
+
+  return new URL(safePath, `${PUBLIC_BASE_URL}/`).toString();
 }
 
 function sendText(response, statusCode, message) {
@@ -572,7 +586,7 @@ async function writeDeploymentSiteFiles(siteRoot, fileMap) {
   }
 }
 
-function toDeploymentSummary(meta, origin) {
+function toDeploymentSummary(meta) {
   const deploymentPath = `/deployments/${meta.id}/`;
   return {
     id: meta.id,
@@ -582,7 +596,7 @@ function toDeploymentSummary(meta, origin) {
     fileCount: meta.fileCount,
     generatedSupportFiles: meta.generatedSupportFiles || [],
     localPath: deploymentPath,
-    localUrl: `${origin}${deploymentPath}`,
+    localUrl: toPublicUrl(deploymentPath),
     targets: {
       railway: true,
       koyeb: true
@@ -744,9 +758,8 @@ async function handleCreateDeploymentRequest(request, response) {
     "utf8"
   );
 
-  const origin = getRequestOrigin(request);
   sendJson(response, 201, {
-    deployment: toDeploymentSummary(metadata, origin),
+    deployment: toDeploymentSummary(metadata),
     limits: {
       maxPayloadBytes: MAX_DEPLOYMENT_PAYLOAD_BYTES,
       maxFileCount: MAX_DEPLOYMENT_FILE_COUNT
@@ -755,9 +768,8 @@ async function handleCreateDeploymentRequest(request, response) {
 }
 
 async function handleListDeploymentsRequest(request, response) {
-  const origin = getRequestOrigin(request);
   const metadata = await listDeploymentMetadata();
-  const deployments = metadata.map((entry) => toDeploymentSummary(entry, origin));
+  const deployments = metadata.map((entry) => toDeploymentSummary(entry));
 
   sendJson(response, 200, {
     deployments,
@@ -769,11 +781,10 @@ async function handleListDeploymentsRequest(request, response) {
 }
 
 async function handleGetDeploymentRequest(request, response, deploymentId) {
-  const origin = getRequestOrigin(request);
   const metadata = await readDeploymentMeta(deploymentId);
 
   sendJson(response, 200, {
-    deployment: toDeploymentSummary(metadata, origin)
+    deployment: toDeploymentSummary(metadata)
   });
 }
 

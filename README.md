@@ -49,4 +49,6 @@ Open `http://localhost:8000`.
 ## Notes
 
 - `server.js` listens on `process.env.PORT` for platform compatibility.
+- Deployment API links default to relative paths like `/deployments/{id}/` so platform hostnames are not forced into the UI.
+- To return absolute `.com` deployment links, set `PUBLIC_BASE_URL` (example: `https://app.yourdomain.com`).
 - Some external websites can still block iframe/proxy access due anti-bot or account security flows.
