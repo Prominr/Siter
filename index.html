@@ -902,6 +902,19 @@
       return payload;
     }
 
+    function resolveAbsoluteUrl(value) {
+      const raw = String(value || "").trim();
+      if (!raw) {
+        return "";
+      }
+
+      try {
+        return new URL(raw, window.location.origin).toString();
+      } catch (_error) {
+        return raw;
+      }
+    }
+
     function renderDeployments(deployments) {
       deploymentsList.innerHTML = "";
 
@@ -913,8 +926,10 @@
       for (const deployment of deployments) {
         const card = document.createElement("article");
         card.className = "deployment-item";
-        const deploymentHref = String(deployment.localUrl || deployment.localPath || "#");
-        const deploymentLabel = String(deployment.localPath || deployment.localUrl || "Unavailable");
+        const deploymentPath = String(deployment.localPath || "");
+        const deploymentUrl = resolveAbsoluteUrl(deployment.localUrl || deploymentPath);
+        const deploymentHref = deploymentUrl || "#";
+        const deploymentLabel = deploymentUrl || deploymentPath || "Unavailable";
 
         const title = document.createElement("h3");
         title.textContent = deployment.name || deployment.id;
@@ -953,8 +968,13 @@
         copyBtn.className = "mini";
         copyBtn.textContent = "Copy URL";
         copyBtn.addEventListener("click", async () => {
+          if (!deploymentUrl) {
+            setDeployStatus("Deployment URL unavailable.", "error");
+            return;
+          }
+
           try {
-            await copyText(deploymentHref);
+            await copyText(deploymentUrl);
             setDeployStatus("Deployment URL copied.", "ok");
           } catch (_error) {
             setDeployStatus("Copy failed. Copy URL manually from deployment list.", "error");
@@ -1055,8 +1075,10 @@
         await refreshDeployments({ silent: true });
 
         const deployment = payload.deployment || {};
-        const deploymentHref = String(deployment.localUrl || deployment.localPath || "#");
-        const deploymentLabel = String(deployment.localPath || deployment.localUrl || "Unavailable");
+        const deploymentPath = String(deployment.localPath || "");
+        const deploymentUrl = resolveAbsoluteUrl(deployment.localUrl || deploymentPath);
+        const deploymentHref = deploymentUrl || "#";
+        const deploymentLabel = deploymentUrl || deploymentPath || "Unavailable";
         setDeployStatus("Deployment created successfully.", "ok");
         latestDeployment.innerHTML = `Latest deployment: <a href="${escapeHtml(deploymentHref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(deploymentLabel)}</a>`;
       } catch (error) {
