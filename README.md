@@ -1,6 +1,6 @@
 # Siting Deploy Studio
 
-Siting is an advanced deployment workspace inspired by Railway and Koyeb workflows.
+Siting is an advanced deployment workspace inspired by Railway.com and Koyeb workflows.
 
 It supports:
 
@@ -30,12 +30,12 @@ Open `http://localhost:8000`.
 - Generated deployments are stored in `.deployments/` (inside this folder).
 - This directory is runtime data and should typically not be committed.
 
-## Deploy this app on Railway
+## Deploy this app on Railway.com
 
 1. Push this `Siting` folder to GitHub.
-2. In Railway, choose **Deploy from GitHub**.
+2. In Railway.com, choose **Deploy from GitHub**.
 3. Set **Root Directory** to `Siting` (if needed).
-4. Railway uses `npm start` from `railway.json`.
+4. Railway.com uses `npm start` from `railway.json`.
 5. Deploy.
 
 ## Deploy this app on Koyeb

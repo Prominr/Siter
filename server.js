@@ -265,11 +265,11 @@ function buildDeploymentSupportFiles(projectName) {
     "",
     `Project: ${displayName}`,
     "",
-    "## Railway",
+    "## Railway.com",
     "1. Push this folder to GitHub.",
-    "2. In Railway, choose Deploy from GitHub.",
+    "2. In Railway.com, choose Deploy from GitHub.",
     "3. Set Root Directory to this project folder.",
-    "4. Deploy. Railway uses npm start.",
+    "4. Deploy. Railway.com uses npm start.",
     "",
     "## Koyeb",
     "1. Push this folder to GitHub.",
@@ -282,7 +282,6 @@ function buildDeploymentSupportFiles(projectName) {
     "package.json": `${JSON.stringify(generatedPackageJson, null, 2)}\n`,
     "server.js": `${generatedStaticServer}\n`,
     "railway.json": `${JSON.stringify({
-      "$schema": "https://railway.app/railway.schema.json",
       build: {
         builder: "NIXPACKS"
       },
