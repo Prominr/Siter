@@ -1102,6 +1102,14 @@
         return value;
       }
 
+      if (value.startsWith("/") && !value.startsWith("//")) {
+        return new URL(value, window.location.origin).toString();
+      }
+
+      if (/^(?:deployments|api|proxy)(?:\/|$)/i.test(value)) {
+        return new URL(`/${value.replace(/^\/+/, "")}`, window.location.origin).toString();
+      }
+
       if (/^[^/\s]+\.[^/\s]+/.test(value)) {
         return `https://${value}`;
       }
@@ -1112,6 +1120,18 @@
     function toProxyUrl(target, hardRefresh) {
       if (target === "about:blank") {
         return target;
+      }
+
+      try {
+        const parsedTarget = new URL(target, window.location.origin);
+        if (parsedTarget.origin === window.location.origin && parsedTarget.pathname.startsWith("/deployments/")) {
+          if (hardRefresh) {
+            parsedTarget.searchParams.set("_cb", String(Date.now()));
+          }
+          return parsedTarget.toString();
+        }
+      } catch (_error) {
+        // Fall back to proxy URL generation.
       }
 
       const url = new URL(PROXY_PREFIX, window.location.origin);
