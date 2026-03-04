@@ -1,0 +1,12 @@
+{
+  "name": "siting-com-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Siting proxy workspace for loading .com websites.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

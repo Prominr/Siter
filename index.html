@@ -1,0 +1,1196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Siting Deploy Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-a: #071822;
+      --bg-b: #0f2737;
+      --panel: #0d202f;
+      --panel-soft: #132f45;
+      --panel-strong: #172f40;
+      --line: #23445f;
+      --line-soft: #1c3c55;
+      --text: #e8f4ff;
+      --muted: #97b2ca;
+      --accent: #ff9d47;
+      --accent-strong: #ffb16f;
+      --ok: #3bd7ad;
+      --danger: #ff6a75;
+      --shadow: rgba(0, 0, 0, 0.32);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Space Grotesk", sans-serif;
+      background:
+        radial-gradient(circle at 12% 6%, rgba(255, 157, 71, 0.22), transparent 38%),
+        radial-gradient(circle at 88% 12%, rgba(59, 215, 173, 0.2), transparent 36%),
+        linear-gradient(145deg, var(--bg-a), var(--bg-b));
+      padding: 16px 0 28px;
+    }
+
+    .app {
+      width: min(1240px, 100% - 24px);
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, var(--panel), var(--panel-soft));
+      box-shadow: 0 16px 42px var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 18px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      background:
+        radial-gradient(circle at 24% 20%, rgba(255, 157, 71, 0.24), transparent 52%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.25rem, 2.8vw, 2rem);
+      letter-spacing: 0.01em;
+    }
+
+    .hero p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+      max-width: 760px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: end;
+      gap: 8px;
+    }
+
+    .chip {
+      font-family: "IBM Plex Mono", monospace;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 11px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      background: rgba(255, 255, 255, 0.04);
+      white-space: nowrap;
+    }
+
+    .chip.ok {
+      color: var(--ok);
+      border-color: rgba(59, 215, 173, 0.55);
+      background: rgba(59, 215, 173, 0.12);
+    }
+
+    .chip.warn {
+      color: var(--accent-strong);
+      border-color: rgba(255, 157, 71, 0.56);
+      background: rgba(255, 157, 71, 0.13);
+    }
+
+    .deploy-grid {
+      display: grid;
+      grid-template-columns: minmax(360px, 1.2fr) minmax(320px, 1fr);
+      gap: 0;
+    }
+
+    .panel {
+      padding: 16px;
+      display: grid;
+      align-content: start;
+      gap: 12px;
+    }
+
+    .panel + .panel {
+      border-left: 1px solid var(--line-soft);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+    }
+
+    .panel h2 {
+      margin: 0;
+      font-size: 1.03rem;
+    }
+
+    .panel .sub {
+      margin: -5px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field-label {
+      font-family: "IBM Plex Mono", monospace;
+      color: var(--muted);
+      font-size: 0.76rem;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+    }
+
+    .input,
+    .textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(4, 13, 22, 0.56);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+      padding: 10px 12px;
+    }
+
+    .textarea {
+      min-height: 72px;
+      resize: vertical;
+    }
+
+    .input:focus,
+    .textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 157, 71, 0.16);
+    }
+
+    .file-intake {
+      border: 1px dashed rgba(59, 215, 173, 0.5);
+      border-radius: 14px;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      background: rgba(59, 215, 173, 0.07);
+    }
+
+    .file-intake-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 9px 12px;
+      color: var(--text);
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.04);
+      font-weight: 600;
+      font-family: inherit;
+      transition: filter 120ms ease, border-color 120ms ease;
+    }
+
+    .btn:hover {
+      filter: brightness(1.08);
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      filter: none;
+    }
+
+    .btn-primary {
+      border-color: rgba(255, 157, 71, 0.64);
+      background: linear-gradient(180deg, rgba(255, 157, 71, 0.38), rgba(255, 157, 71, 0.2));
+    }
+
+    .btn-soft {
+      border-color: rgba(59, 215, 173, 0.56);
+      background: rgba(59, 215, 173, 0.16);
+      color: #ccfff1;
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .file-picker input {
+      display: none;
+    }
+
+    .file-summary {
+      margin: 0;
+      color: #cbe6ff;
+      font-size: 0.88rem;
+    }
+
+    .file-preview {
+      margin: 0;
+      padding: 0 0 0 18px;
+      display: grid;
+      gap: 6px;
+      max-height: 170px;
+      overflow: auto;
+      color: var(--muted);
+      font-size: 0.81rem;
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .status-line {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 10px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.03);
+      font-size: 0.84rem;
+    }
+
+    .status-line.ok {
+      border-color: rgba(59, 215, 173, 0.55);
+      color: #c8ffef;
+      background: rgba(59, 215, 173, 0.14);
+    }
+
+    .status-line.error {
+      border-color: rgba(255, 106, 117, 0.52);
+      color: #ffd4d9;
+      background: rgba(255, 106, 117, 0.12);
+    }
+
+    .latest {
+      margin: 0;
+      font-size: 0.84rem;
+      color: var(--muted);
+      word-break: break-all;
+    }
+
+    .latest a {
+      color: #9de7ff;
+    }
+
+    .deployments-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .deployments-list {
+      display: grid;
+      gap: 10px;
+      max-height: 330px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .deployment-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px;
+      background: rgba(255, 255, 255, 0.03);
+      display: grid;
+      gap: 8px;
+    }
+
+    .deployment-item h3 {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .deployment-meta {
+      color: var(--muted);
+      font-size: 0.79rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    .deployment-link {
+      color: #9de7ff;
+      font-size: 0.83rem;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .deployment-link:hover {
+      text-decoration: underline;
+    }
+
+    .deployment-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .mini {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.78rem;
+    }
+
+    .guide {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px;
+      background: rgba(255, 255, 255, 0.03);
+      display: grid;
+      gap: 8px;
+    }
+
+    .guide h3 {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    .guide ol {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .proxy-card {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .proxy-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .proxy-head h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .proxy-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      max-width: 680px;
+    }
+
+    .proxy-nav {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+    }
+
+    .url-input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: rgba(4, 12, 20, 0.58);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+    }
+
+    .url-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 157, 71, 0.16);
+    }
+
+    .quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .quick-link {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    .quick-link:hover {
+      border-color: rgba(59, 215, 173, 0.58);
+      color: var(--text);
+    }
+
+    .viewer {
+      min-height: 58vh;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .viewer-top {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.76rem;
+    }
+
+    .current-site {
+      max-width: 72%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #9de7ff;
+    }
+
+    .proxy-state {
+      color: var(--muted);
+    }
+
+    .proxy-state.ok {
+      color: #ccfff0;
+    }
+
+    .proxy-state.error {
+      color: #ffd3d8;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #ffffff;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 0.84rem;
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      margin: 0;
+    }
+
+    @media (max-width: 1040px) {
+      .deploy-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel + .panel {
+        border-left: 0;
+        border-top: 1px solid var(--line-soft);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .proxy-nav {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .chip-row {
+        justify-content: start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="card hero">
+      <div>
+        <h1>Siting Deploy Studio</h1>
+        <p>
+          Upload website files, generate deployment-ready bundles, and publish a local deployment URL.
+          This workspace is optimized for Railway and Koyeb style deployments with low confusion defaults.
+        </p>
+      </div>
+      <div class="chip-row">
+        <span class="chip ok">Deployment API online</span>
+        <span class="chip">Railway preset</span>
+        <span class="chip">Koyeb preset</span>
+        <span class="chip warn">No API keys required</span>
+      </div>
+    </section>
+
+    <section class="card deploy-grid">
+      <section class="panel">
+        <h2>Site Intake</h2>
+        <p class="sub">Choose your project files, then build a deployment package in one flow.</p>
+
+        <form id="deployForm" class="field-grid">
+          <label class="field">
+            <span class="field-label">Project name</span>
+            <input id="projectName" class="input" placeholder="Example: Portfolio Pro" maxlength="80" autocomplete="off" />
+          </label>
+
+          <label class="field">
+            <span class="field-label">Release notes (optional)</span>
+            <textarea id="releaseNotes" class="textarea" placeholder="Example: Added pricing page and performance improvements"></textarea>
+          </label>
+
+          <div class="file-intake">
+            <div class="file-intake-head">
+              <div>
+                <strong>File upload</strong>
+                <p class="hint">Pick a folder or multiple files. If index.html is missing, one is auto-generated.</p>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <label class="btn btn-soft file-picker" for="siteFiles">Select files/folder
+                  <input id="siteFiles" type="file" multiple webkitdirectory directory />
+                </label>
+                <button id="clearFilesBtn" type="button" class="btn btn-ghost">Clear</button>
+              </div>
+            </div>
+
+            <label class="toggle" for="includeSupportFiles">
+              <input id="includeSupportFiles" type="checkbox" checked />
+              Generate Railway + Koyeb support files automatically
+            </label>
+
+            <p id="fileSummary" class="file-summary">No files selected yet.</p>
+            <ul id="filePreview" class="file-preview"></ul>
+          </div>
+
+          <button id="deployBtn" type="submit" class="btn btn-primary">Create deployment</button>
+        </form>
+
+        <p id="deployStatus" class="status-line">Ready. Upload files to create a deployment.</p>
+        <p id="latestDeployment" class="latest"></p>
+      </section>
+
+      <section class="panel">
+        <div class="deployments-head">
+          <div>
+            <h2>Deployments</h2>
+            <p class="sub">Each deployment gets an instant local URL at /deployments/{id}/</p>
+          </div>
+          <button id="refreshDeploymentsBtn" type="button" class="btn btn-ghost">Refresh list</button>
+        </div>
+
+        <div id="deploymentsList" class="deployments-list">
+          <p class="empty">No deployments created yet.</p>
+        </div>
+
+        <div class="guide">
+          <h3>Professional deployment checklist</h3>
+          <ol>
+            <li>Upload your site files and confirm the preview list looks right.</li>
+            <li>Create deployment to generate Railway/Koyeb files when needed.</li>
+            <li>Open the generated local URL and validate every page route.</li>
+            <li>Push deployment files to GitHub, then connect that repo in Railway or Koyeb.</li>
+          </ol>
+        </div>
+      </section>
+    </section>
+
+    <section class="card proxy-card">
+      <div class="proxy-head">
+        <div>
+          <h2>Proxy Workspace</h2>
+          <p>
+            Use this to test .com sites in-frame before deployment. Shift+Refresh forces cache-busting.
+          </p>
+        </div>
+      </div>
+
+      <form id="proxyForm" class="proxy-nav">
+        <input id="urlInput" class="url-input" autocomplete="off" spellcheck="false" placeholder="Type URL or search (example: github.com)" />
+        <button type="submit" class="btn btn-primary">Open</button>
+        <button id="refreshBtn" type="button" class="btn" title="Shift + click for hard refresh">Refresh</button>
+      </form>
+
+      <div id="quickLinks" class="quick-links">
+        <button type="button" class="quick-link" data-url="https://google.com">google.com</button>
+        <button type="button" class="quick-link" data-url="https://github.com">github.com</button>
+        <button type="button" class="quick-link" data-url="https://youtube.com">youtube.com</button>
+        <button type="button" class="quick-link" data-url="https://wikipedia.org">wikipedia.org</button>
+      </div>
+
+      <section class="viewer">
+        <div class="viewer-top">
+          <span id="currentSite" class="current-site">waiting...</span>
+          <span id="proxyState" class="proxy-state">Idle</span>
+        </div>
+        <iframe id="siteFrame" referrerpolicy="no-referrer" sandbox="allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-pointer-lock allow-presentation allow-same-origin allow-scripts"></iframe>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const PROXY_PREFIX = "/proxy?url=";
+    const FALLBACK_MAX_PAYLOAD_BYTES = 14 * 1024 * 1024;
+    const FALLBACK_MAX_FILE_COUNT = 300;
+
+    const deployForm = document.getElementById("deployForm");
+    const projectNameInput = document.getElementById("projectName");
+    const releaseNotesInput = document.getElementById("releaseNotes");
+    const siteFilesInput = document.getElementById("siteFiles");
+    const clearFilesBtn = document.getElementById("clearFilesBtn");
+    const includeSupportFilesInput = document.getElementById("includeSupportFiles");
+    const deployBtn = document.getElementById("deployBtn");
+    const deployStatus = document.getElementById("deployStatus");
+    const latestDeployment = document.getElementById("latestDeployment");
+    const fileSummary = document.getElementById("fileSummary");
+    const filePreview = document.getElementById("filePreview");
+    const deploymentsList = document.getElementById("deploymentsList");
+    const refreshDeploymentsBtn = document.getElementById("refreshDeploymentsBtn");
+
+    const proxyForm = document.getElementById("proxyForm");
+    const urlInput = document.getElementById("urlInput");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const quickLinks = document.getElementById("quickLinks");
+    const siteFrame = document.getElementById("siteFrame");
+    const currentSite = document.getElementById("currentSite");
+    const proxyState = document.getElementById("proxyState");
+
+    const deploymentState = {
+      selectedFiles: [],
+      limits: {
+        maxPayloadBytes: FALLBACK_MAX_PAYLOAD_BYTES,
+        maxFileCount: FALLBACK_MAX_FILE_COUNT
+      }
+    };
+
+    let activeUrl = "https://google.com";
+
+    function escapeHtml(raw) {
+      return String(raw)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function formatBytes(bytes) {
+      const value = Number(bytes) || 0;
+      if (value < 1024) return `${value} B`;
+      if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+      return `${(value / (1024 * 1024)).toFixed(2)} MB`;
+    }
+
+    function setDeployStatus(message, tone) {
+      deployStatus.textContent = message;
+      deployStatus.className = "status-line";
+      if (tone === "ok") deployStatus.classList.add("ok");
+      if (tone === "error") deployStatus.classList.add("error");
+    }
+
+    function setProxyState(message, tone) {
+      proxyState.textContent = message;
+      proxyState.className = "proxy-state";
+      if (tone === "ok") proxyState.classList.add("ok");
+      if (tone === "error") proxyState.classList.add("error");
+    }
+
+    function setDeploymentBusy(isBusy) {
+      deployBtn.disabled = isBusy;
+      siteFilesInput.disabled = isBusy;
+      clearFilesBtn.disabled = isBusy;
+      includeSupportFilesInput.disabled = isBusy;
+      projectNameInput.disabled = isBusy;
+      releaseNotesInput.disabled = isBusy;
+    }
+
+    function normalizeInputPath(file) {
+      const rawPath = String(file.webkitRelativePath || file.name || "");
+      const normalized = rawPath
+        .replaceAll("\\", "/")
+        .replace(/^\/+/, "")
+        .replace(/^\.\/+/, "")
+        .trim();
+
+      if (!normalized || normalized.includes("../") || normalized.startsWith("..")) {
+        return "";
+      }
+
+      return normalized;
+    }
+
+    function collectSelectedFiles(fileList) {
+      const selected = [];
+      const seen = new Set();
+
+      for (const file of Array.from(fileList || [])) {
+        const normalizedPath = normalizeInputPath(file);
+        if (!normalizedPath) {
+          continue;
+        }
+
+        const dedupeKey = normalizedPath.toLowerCase();
+        if (seen.has(dedupeKey)) {
+          continue;
+        }
+
+        seen.add(dedupeKey);
+        selected.push({
+          path: normalizedPath,
+          file,
+          size: file.size || 0
+        });
+      }
+
+      selected.sort((a, b) => a.path.localeCompare(b.path));
+      return selected;
+    }
+
+    function renderSelectedFiles() {
+      const entries = deploymentState.selectedFiles;
+
+      if (!entries.length) {
+        fileSummary.textContent = "No files selected yet.";
+        filePreview.innerHTML = "";
+        return;
+      }
+
+      const totalBytes = entries.reduce((sum, entry) => sum + entry.size, 0);
+      const estimatedPayloadBytes = estimateBase64PayloadBytes(entries);
+      fileSummary.textContent = `${entries.length} file(s) selected - ${formatBytes(totalBytes)} raw / ${formatBytes(estimatedPayloadBytes)} transfer`;
+
+      const previewItems = entries.slice(0, 10);
+      const html = previewItems
+        .map((entry) => `<li>${escapeHtml(entry.path)} (${formatBytes(entry.size)})</li>`)
+        .join("");
+
+      const remaining = entries.length - previewItems.length;
+      filePreview.innerHTML = remaining > 0
+        ? `${html}<li>+${remaining} more file(s)</li>`
+        : html;
+    }
+
+    function estimateBase64PayloadBytes(entries) {
+      return entries.reduce((sum, entry) => {
+        const size = Number(entry.size) || 0;
+        return sum + Math.ceil(size / 3) * 4;
+      }, 0);
+    }
+
+    function arrayBufferToBase64(arrayBuffer) {
+      const bytes = new Uint8Array(arrayBuffer);
+      const chunkSize = 0x8000;
+      let binary = "";
+
+      for (let index = 0; index < bytes.length; index += chunkSize) {
+        const chunk = bytes.subarray(index, index + chunkSize);
+        binary += String.fromCharCode(...chunk);
+      }
+
+      return btoa(binary);
+    }
+
+    async function fileToBase64(file) {
+      const buffer = await file.arrayBuffer();
+      return arrayBufferToBase64(buffer);
+    }
+
+    function getValidationError(entries) {
+      if (!entries.length) {
+        return "Select files first before creating a deployment.";
+      }
+
+      const maxFileCount = deploymentState.limits.maxFileCount || FALLBACK_MAX_FILE_COUNT;
+      const maxPayloadBytes = deploymentState.limits.maxPayloadBytes || FALLBACK_MAX_PAYLOAD_BYTES;
+      const estimatedPayloadBytes = estimateBase64PayloadBytes(entries);
+
+      if (entries.length > maxFileCount) {
+        return `Too many files (${entries.length}). Limit is ${maxFileCount}.`;
+      }
+
+      if (estimatedPayloadBytes > maxPayloadBytes) {
+        return `Estimated transfer size is ${formatBytes(estimatedPayloadBytes)}. Limit is ${formatBytes(maxPayloadBytes)}.`;
+      }
+
+      return "";
+    }
+
+    async function copyText(value) {
+      const text = String(value || "");
+      if (!text) return;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.append(area);
+      area.focus();
+      area.select();
+      document.execCommand("copy");
+      area.remove();
+    }
+
+    function applyServerLimits(payload) {
+      if (!payload || typeof payload !== "object" || !payload.limits) {
+        return;
+      }
+
+      const maxPayloadBytes = Number(payload.limits.maxPayloadBytes);
+      const maxFileCount = Number(payload.limits.maxFileCount);
+
+      if (Number.isFinite(maxPayloadBytes) && maxPayloadBytes > 0) {
+        deploymentState.limits.maxPayloadBytes = maxPayloadBytes;
+      }
+
+      if (Number.isFinite(maxFileCount) && maxFileCount > 0) {
+        deploymentState.limits.maxFileCount = maxFileCount;
+      }
+    }
+
+    async function fetchJson(url, options) {
+      const response = await fetch(url, options);
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || `Request failed (${response.status})`);
+      }
+      return payload;
+    }
+
+    function renderDeployments(deployments) {
+      deploymentsList.innerHTML = "";
+
+      if (!deployments.length) {
+        deploymentsList.innerHTML = '<p class="empty">No deployments created yet.</p>';
+        return;
+      }
+
+      for (const deployment of deployments) {
+        const card = document.createElement("article");
+        card.className = "deployment-item";
+
+        const title = document.createElement("h3");
+        title.textContent = deployment.name || deployment.id;
+        card.append(title);
+
+        const meta = document.createElement("p");
+        meta.className = "deployment-meta";
+        const createdDate = deployment.createdAt
+          ? new Date(deployment.createdAt).toLocaleString()
+          : "unknown";
+        meta.textContent = `${deployment.id} | ${deployment.fileCount || 0} file(s) | ${createdDate}`;
+        card.append(meta);
+
+        const link = document.createElement("a");
+        link.className = "deployment-link";
+        link.href = deployment.localUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = deployment.localUrl;
+        card.append(link);
+
+        const actions = document.createElement("div");
+        actions.className = "deployment-actions";
+
+        const openBtn = document.createElement("button");
+        openBtn.type = "button";
+        openBtn.className = "mini";
+        openBtn.textContent = "Open";
+        openBtn.addEventListener("click", () => {
+          window.open(deployment.localUrl, "_blank", "noopener");
+        });
+        actions.append(openBtn);
+
+        const copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className = "mini";
+        copyBtn.textContent = "Copy URL";
+        copyBtn.addEventListener("click", async () => {
+          try {
+            await copyText(deployment.localUrl);
+            setDeployStatus("Deployment URL copied.", "ok");
+          } catch (_error) {
+            setDeployStatus("Copy failed. Copy URL manually from deployment list.", "error");
+          }
+        });
+        actions.append(copyBtn);
+
+        const copyPathBtn = document.createElement("button");
+        copyPathBtn.type = "button";
+        copyPathBtn.className = "mini";
+        copyPathBtn.textContent = "Copy path";
+        copyPathBtn.addEventListener("click", async () => {
+          try {
+            await copyText(deployment.localPath || "");
+            setDeployStatus("Deployment path copied.", "ok");
+          } catch (_error) {
+            setDeployStatus("Could not copy deployment path.", "error");
+          }
+        });
+        actions.append(copyPathBtn);
+
+        card.append(actions);
+        deploymentsList.append(card);
+      }
+    }
+
+    async function refreshDeployments(options = {}) {
+      const silent = Boolean(options.silent);
+      try {
+        if (!silent) {
+          setDeployStatus("Syncing deployments...", "");
+        }
+
+        const payload = await fetchJson("/api/deployments", {
+          cache: "no-store"
+        });
+        applyServerLimits(payload);
+
+        const deployments = Array.isArray(payload.deployments) ? payload.deployments : [];
+        renderDeployments(deployments);
+
+        if (!silent) {
+          setDeployStatus(`Deployment list updated (${deployments.length}).`, "ok");
+        }
+      } catch (error) {
+        if (!silent) {
+          setDeployStatus(error.message || "Could not load deployments.", "error");
+        }
+      }
+    }
+
+    async function createDeployment() {
+      const entries = deploymentState.selectedFiles;
+      const validationError = getValidationError(entries);
+      if (validationError) {
+        setDeployStatus(validationError, "error");
+        return;
+      }
+
+      const deploymentName = String(projectNameInput.value || "").trim() || "Untitled Site";
+      const includeSupportFiles = includeSupportFilesInput.checked;
+      const releaseNotes = String(releaseNotesInput.value || "").trim();
+
+      setDeploymentBusy(true);
+      latestDeployment.textContent = "";
+
+      try {
+        const payloadFiles = [];
+        for (let index = 0; index < entries.length; index += 1) {
+          const entry = entries[index];
+          setDeployStatus(`Packaging file ${index + 1}/${entries.length}...`, "");
+
+          payloadFiles.push({
+            path: entry.path,
+            contentBase64: await fileToBase64(entry.file)
+          });
+
+          if ((index + 1) % 12 === 0) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+          }
+        }
+
+        setDeployStatus("Creating deployment workspace...", "");
+        const payload = await fetchJson("/api/deployments", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: deploymentName,
+            notes: releaseNotes,
+            includeSupportFiles,
+            files: payloadFiles
+          })
+        });
+
+        applyServerLimits(payload);
+        await refreshDeployments({ silent: true });
+
+        const deployment = payload.deployment || {};
+        setDeployStatus("Deployment created successfully.", "ok");
+        latestDeployment.innerHTML = `Latest deployment: <a href="${escapeHtml(deployment.localUrl || "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(deployment.localUrl || "Unavailable")}</a>`;
+      } catch (error) {
+        setDeployStatus(error.message || "Deployment failed.", "error");
+      } finally {
+        setDeploymentBusy(false);
+      }
+    }
+
+    function normalizeUrl(raw) {
+      const value = String(raw || "").trim();
+      if (!value) {
+        return "";
+      }
+
+      if (/^about:blank$/i.test(value)) {
+        return "about:blank";
+      }
+
+      if (/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(value)) {
+        return value;
+      }
+
+      if (/^[^/\s]+\.[^/\s]+/.test(value)) {
+        return `https://${value}`;
+      }
+
+      return `https://www.google.com/search?q=${encodeURIComponent(value)}`;
+    }
+
+    function toProxyUrl(target, hardRefresh) {
+      if (target === "about:blank") {
+        return target;
+      }
+
+      const url = new URL(PROXY_PREFIX, window.location.origin);
+      url.searchParams.set("url", target);
+      if (hardRefresh) {
+        url.searchParams.set("_cb", String(Date.now()));
+      }
+      return url.toString();
+    }
+
+    async function loadUrl(raw, options = {}) {
+      const normalized = normalizeUrl(raw);
+      if (!normalized) {
+        return;
+      }
+
+      activeUrl = normalized;
+      currentSite.textContent = normalized;
+      urlInput.value = normalized;
+
+      if (normalized === "about:blank") {
+        siteFrame.srcdoc = "<h2 style='font-family:sans-serif;padding:16px'>Blank tab</h2>";
+        setProxyState("Ready", "ok");
+        return;
+      }
+
+      const proxyUrl = toProxyUrl(normalized, Boolean(options.hardRefresh));
+      setProxyState("Loading...", "");
+
+      try {
+        const response = await fetch(proxyUrl, {
+          cache: "no-store"
+        });
+        if (!response.ok) {
+          throw new Error(`proxy ${response.status}`);
+        }
+
+        const contentType = (response.headers.get("content-type") || "").toLowerCase();
+        if (contentType.includes("text/html")) {
+          siteFrame.srcdoc = await response.text();
+        } else {
+          siteFrame.src = proxyUrl;
+        }
+
+        setProxyState("Loaded", "ok");
+      } catch (error) {
+        siteFrame.srcdoc = `<main style="font-family:sans-serif;padding:20px"><h2>Could not load site</h2><p>${escapeHtml(error.message || "unknown error")}</p><p>Try another URL or refresh.</p></main>`;
+        setProxyState("Load failed", "error");
+      }
+    }
+
+    deployForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      await createDeployment();
+    });
+
+    siteFilesInput.addEventListener("change", () => {
+      deploymentState.selectedFiles = collectSelectedFiles(siteFilesInput.files);
+      renderSelectedFiles();
+      setDeployStatus("Files ready. Create deployment when ready.", "");
+    });
+
+    clearFilesBtn.addEventListener("click", () => {
+      siteFilesInput.value = "";
+      deploymentState.selectedFiles = [];
+      renderSelectedFiles();
+      setDeployStatus("File selection cleared.", "");
+      latestDeployment.textContent = "";
+    });
+
+    refreshDeploymentsBtn.addEventListener("click", async () => {
+      await refreshDeployments();
+    });
+
+    proxyForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      loadUrl(urlInput.value);
+    });
+
+    refreshBtn.addEventListener("click", (event) => {
+      loadUrl(activeUrl, {
+        hardRefresh: event.shiftKey
+      });
+    });
+
+    quickLinks.addEventListener("click", (event) => {
+      const chip = event.target.closest("[data-url]");
+      if (!chip) {
+        return;
+      }
+      loadUrl(chip.getAttribute("data-url"));
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "r") {
+        event.preventDefault();
+        loadUrl(activeUrl, {
+          hardRefresh: event.shiftKey
+        });
+      }
+    });
+
+    renderSelectedFiles();
+    loadUrl(activeUrl);
+    refreshDeployments({ silent: true });
+  </script>
+</body>
+</html>
